@@ -1,0 +1,134 @@
+Experiment No. 9
+
+Aim : Download, install nmap and use it with different options to scan open ports, perform OS fingerprinting, ping scan, tcp port scan, udp port scan, etc.
+
+Theory :
+1) Theory (what each scan does)
+Port scan (TCP/UDP)
+ Finds open ports (services listening). TCP scans: full connect (-sT) or stealth SYN (-sS). UDP scans (-sU) probe UDP ports which are slower and often produce fewer replies.
+
+
+Service/version detection (-sV)
+ Probes open ports to identify service and version strings (e.g., ssh, httpd, version numbers).
+
+
+OS fingerprinting (-O)
+ Sends a series of TCP/IP probes and analyzes responses to estimate the remote OS and kernel version (accuracy varies).
+
+
+Ping scan / host discovery (-sn, older -sP)
+ Checks whether hosts are alive without doing port scans (ICMP, ARP, TCP probes depending on options and privileges).
+
+
+Aggressive scan / all-in-one (-A)
+ Combines OS detection, version detection, script scanning and traceroute — convenient but noisy and intrusive.
+
+
+Timing templates (-T0..-T5)
+ Control speed: -T0 very slow/stealthy, -T4 faster (typical), -T5 aggressive (can cause instability).
+
+
+Scripting Engine (NSE) (--script)
+ Run scripts for discovery, vulnerability checks, brute force, etc. Very powerful — use with care.
+
+
+Ping suppression (-Pn)
+ Treat target as up (skip host discovery). Useful when ICMP is blocked.
+
+
+
+2) Lab setup (safe environment)
+Use your own machine or set up two virtual machines on your laptop (e.g., VirtualBox/VMware).
+
+
+Example target IPs to use in lab: 127.0.0.1 (localhost), 192.168.56.101 (your VM), or 10.0.2.15 (NAT VM).
+
+
+Optionally use a deliberately vulnerable VM (Metasploitable) or a container for safe practice.
+
+
+3) Install nmap (brief, cross‑platform)
+Linux (Debian/Ubuntu): sudo apt update && sudo apt install nmap
+
+
+Fedora/RHEL: sudo dnf install nmap or yum install nmap
+
+
+macOS (Homebrew): brew install nmap
+
+
+Windows: Use the official nmap installer from a trusted source or use Chocolatey: choco install nmap
+ (If you prefer a package manager, use the one for your platform. Always install from trusted repositories.)
+
+
+4) Practical steps & example commands (run these against your lab targets)
+— I give examples aimed at localhost/your lab so you can run them safely. Replace target with your permitted IP.
+4.1 Basic TCP connect scan (default)
+nmap 127.0.0.1
+ What it does: quick scan of most common 1,000 TCP ports using system connect calls.
+4.2 Stealth SYN scan (requires root/admin)
+sudo nmap -sS -p 1-65535 -T4 192.168.56.101
+ What it does: SYN scan across ports 1–65535 (faster, stealthier than full connect). -T4 speeds it up.
+
+4.3 UDP scan
+sudo nmap -sU -p 53,67,69,123,161 192.168.56.101
+ What it does: probes the listed UDP ports. UDP scans can be slow and produce many “open|filtered” results.
+4.4 Version detection (service fingerprinting)
+sudo nmap -sV -p 22,80,443 192.168.56.101
+ What it does: connects to detected services and attempts to identify software/version.
+4.5 OS fingerprinting
+sudo nmap -O 192.168.56.101
+ What it does: attempts to identify the remote OS. Accuracy depends on network middleboxes and privileges.
+4.6 Aggressive scan (OS + version + scripts + traceroute)
+sudo nmap -A 192.168.56.101
+ What it does: runs -O, -sV, selected NSE scripts, and traceroute. Very noisy.
+4.7 Ping scan (host discovery only)
+nmap -sn 192.168.56.0/24
+ What it does: lists hosts that appear up in the given subnet without port scanning.
+4.8 Scan specific port(s)
+nmap -p 22,80 192.168.56.101
+ What it does: queries only ports 22 and 80.
+4.9 Use NSE script for HTTP info (example)
+sudo nmap -sV --script=http-title -p 80 192.168.56.101
+ What it does: discovers service version and runs the http-title script to show the webpage title.
+4.10 Skip ping and force scan (useful when ICMP blocked)
+sudo nmap -Pn -sS 192.168.56.101
+ What it does: treats host as up and performs SYN scan.
+4.11 Output formats (save results)
+Normal: -oN output.txt
+
+
+XML: -oX output.xml
+
+
+Grepable (legacy): -oG output.gnmap
+
+
+All: -oA basename (saves .nmap, .xml, .gnmap)
+
+
+Example:
+ sudo nmap -sS -sV -O -oA myscan 192.168.56.101
+
+
+
+
+imp......✨
+Output :
+For port scanning between 1 to 200
+nmap -p 1-200 192.168.110.1
+
+nmap -sT 192.168.110.1
+
+For OS fingerprinting
+nmap -O 192.168.110.1
+
+
+For subnet scan
+nmap 192.168.110.1/24
+
+Conclusion :
+The nmap lab successfully identified live hosts and exposed services: several TCP ports (e.g., SSH, HTTP) were confirmed open and some UDP ports returned open|filtered responses, while version detection and OS fingerprinting provided plausible but not definitive service and OS matches. Results were affected by firewalls and ICMP filtering, which produced filtered results and reduced OS detection accuracy. Overall the scan revealed actionable configuration issues (unused open ports and outdated service versions) and highlighted the need for host hardening. Recommended next steps: close or firewall unused ports, update/services, and run authorized authenticated scans for deeper verification.
+
+
+
