@@ -1,0 +1,80 @@
+Start with a broad capture (no BPF), create traffic that includes HTTP, HTTPS, DNS, SSH, and some custom string payloads (e.g., curl to some test endpoints or use nc to send a text string). Save full capture full_capture.pcapng.
+
+
+Open full_capture.pcapng in Wireshark.
+
+
+Port filters
+Capture filter (kernel): port 80 or tcp port 80 — only capture HTTP.
+
+
+Display filter (Wireshark): tcp.port == 80 or http — show packets where either source or destination TCP port is 80.
+
+
+Example action: apply display tcp.port == 22 to show SSH traffic only.
+
+
+Address filters
+Capture filter: host 192.168.56.101 or src host 10.0.2.15 or ether host 00:11:22:33:44:55.
+
+
+Display filter: ip.addr == 192.168.56.101, ip.src == 10.0.2.15, or eth.dst == 00:11:22:33:44:55.
+
+
+Example action: show only packets between two hosts: ip.addr == 10.0.2.15 && ip.addr == 192.168.56.101.
+
+
+Protocol filters
+Capture filter: tcp, udp, icmp (captures only those families).
+
+
+Display filter: dns, http, tls, icmp (Wireshark identifies higher-level protocols).
+
+
+Example action: apply display dns to list only DNS requests/responses.
+
+
+String/content filters
+Capture: BPF does not support arbitrary payload string matching reliably. Use tcp[ ] trick for fixed offsets (advanced) — usually not practical.
+
+
+Display filter: frame contains "GET", http contains "username", frame matches "regex" (use matches carefully).
+
+
+Example action: search for frames containing password: frame contains "password".
+
+
+C — CLI capture and performance measurement (optional)
+Use dumpcap to capture efficiently:
+
+
+sudo dumpcap -i eth0 -w capture.pcapng (runs with small footprint).
+
+
+Use tshark to capture with a capture filter:
+
+
+sudo tshark -i eth0 -f "tcp port 80" -w http_only.pcapng
+
+
+Measure CPU/MEM while capturing: run top/htop on host and note CPU % for Wireshark/tshark/dumpcap and how it changes with high packet rate.
+
+
+Use wireshark’s Statistics → Capture File Properties and I/O graphs (Packets/Timestamp) for packets/sec, packet lengths, and drop counts.
+Output :
+
+
+
+imp........✨
+Capturing based on Protocol filter (DNS)
+
+
+Port filters (tcp.port == 80 or http)
+
+
+
+Address filters (192.168.56.101)
+
+String FIlters (frame contains "GET")
+
+(http.user_agent contains "Chrome")
